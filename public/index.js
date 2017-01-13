@@ -188,6 +188,18 @@ function generatePricePerDriver() {
     var retDate = entry.returnDate.split("-");
     var nDaysRent = (new Date(retDate[0], retDate[1], retDate[2]) - new Date(puDate[0], puDate[1], puDate[2]))/86400000 + 1;
     console.log("Time : " + nDaysRent);
+    if(nDaysRent > 10) {
+      priceDaily = 0.5 * priceDaily;
+      console.log("Discount -50% new price per day : " + priceDaily);
+    }
+    else if(nDaysRent > 4) {
+      priceDaily = 0.7 * priceDaily;
+      console.log("Discount -30% new price per day : " + priceDaily);
+    }
+    else if(nDaysRent > 1) {
+      priceDaily = 0.9 * priceDaily;
+      console.log("Discount -10% new price per day : " + priceDaily);
+    }
 
     entry.price = priceDaily * nDaysRent + entry.distance * priceKm;
     console.log("Price : " + entry.price);
