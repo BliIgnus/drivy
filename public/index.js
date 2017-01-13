@@ -165,6 +165,37 @@ var rentalModifications = [{
   'pickupDate': '2015-12-05'
 }];
 
+
+function generatePricePerDriver() {
+
+  rentals.forEach(rentProcess);
+
+  function rentProcess(entry) {
+    var priceDaily = 0;
+    var priceKm = 0;
+
+    for(var car in cars) {
+      if(entry.carId==  cars[car].id) {
+        console.log("Car : " + cars[car].id);
+        priceDaily = cars[car].pricePerDay;
+        console.log("Price day : " + priceDaily);
+        priceKm = cars[car].pricePerKm;
+        console.log("Price km : " + priceKm);
+      }
+    }
+
+    var puDate = entry.pickupDate.split("-");
+    var retDate = entry.returnDate.split("-");
+    var nDaysRent = (new Date(retDate[0], retDate[1], retDate[2]) - new Date(puDate[0], puDate[1], puDate[2]))/86400000 + 1;
+    console.log("Time : " + nDaysRent);
+
+    entry.price = priceDaily * nDaysRent + entry.distance * priceKm;
+    console.log("Price : " + entry.price);
+  }
+}
+
+generatePricePerDriver();
+
 console.log(cars);
 console.log(rentals);
 console.log(actors);
