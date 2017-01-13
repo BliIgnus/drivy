@@ -187,60 +187,101 @@ function splitCommission(entry, priceWODeductible) {
 }
 
 
-function generatePricePerDriver() {
+function generatePricePerDriver(entry) {
 
-  rentals.forEach(rentProcess);
+  var priceDaily = 0;
+  var priceKm = 0;
 
-  function rentProcess(entry) {
-    var priceDaily = 0;
-    var priceKm = 0;
+  for(var car in cars) {
+    if(entry.carId==  cars[car].id) {
+      console.log("Car : " + cars[car].id);
+      priceDaily = cars[car].pricePerDay;
+      console.log("Price day : " + priceDaily);
+      priceKm = cars[car].pricePerKm;
+      console.log("Price km : " + priceKm);
+    }
+  }
 
-    for(var car in cars) {
-      if(entry.carId==  cars[car].id) {
-        console.log("Car : " + cars[car].id);
-        priceDaily = cars[car].pricePerDay;
-        console.log("Price day : " + priceDaily);
-        priceKm = cars[car].pricePerKm;
-        console.log("Price km : " + priceKm);
+  var puDate = entry.pickupDate.split("-");
+  var retDate = entry.returnDate.split("-");
+  var nDaysRent = (new Date(retDate[0], retDate[1], retDate[2]) - new Date(puDate[0], puDate[1], puDate[2]))/86400000 + 1;
+  console.log("Time : " + nDaysRent);
+  if(nDaysRent > 10) {
+    priceDaily = 0.5 * priceDaily;
+    console.log("Discount -50% new price per day : " + priceDaily);
+  }
+  else if(nDaysRent > 4) {
+    priceDaily = 0.7 * priceDaily;
+    console.log("Discount -30% new price per day : " + priceDaily);
+  }
+  else if(nDaysRent > 1) {
+    priceDaily = 0.9 * priceDaily;
+    console.log("Discount -10% new price per day : " + priceDaily);
+  }
+
+  var basePrice = priceDaily * nDaysRent + entry.distance * priceKm;
+  console.log("Base price : " + basePrice);
+
+  splitCommission(entry, basePrice);
+
+  var deductiblePrice = 0;
+  if(entry.options.deductibleReduction==true) {
+    deductiblePrice = 4 * nDaysRent;
+    console.log("Deductible option taken. Extra price : +" + deductiblePrice);
+  }
+
+  entry.price = basePrice + deductiblePrice;
+  console.log("Total price : " + entry.price);
+  console.log("");
+
+  payTheActors(entry, basePrice, deductiblePrice);
+
+}
+
+
+function payTheActors(entry, basePrice, deductiblePrice) {
+  for(var bill in actors) {
+    if(actors[bill].rentalId==entry.id) {
+
+      for(var actor in actors[bill].payment) {
+        switch (actors[bill].payment[actor].who) {
+          case "driver":
+            actors[bill].payment[actor].amount = entry.price;
+            break;
+
+          case "owner":
+            actors[bill].payment[actor].amount = basePrice * 0.7;
+            break;
+
+          case "insurance":
+            actors[bill].payment[actor].amount = entry.commission.insurance;
+            break;
+
+          case "assistance":
+            actors[bill].payment[actor].amount = entry.commission.assistance;
+            break;
+
+          case "drivy":
+            actors[bill].payment[actor].amount = entry.commission.drivy + deductiblePrice;
+            break;
+
+          default:
+        }
       }
     }
-
-    var puDate = entry.pickupDate.split("-");
-    var retDate = entry.returnDate.split("-");
-    var nDaysRent = (new Date(retDate[0], retDate[1], retDate[2]) - new Date(puDate[0], puDate[1], puDate[2]))/86400000 + 1;
-    console.log("Time : " + nDaysRent);
-    if(nDaysRent > 10) {
-      priceDaily = 0.5 * priceDaily;
-      console.log("Discount -50% new price per day : " + priceDaily);
-    }
-    else if(nDaysRent > 4) {
-      priceDaily = 0.7 * priceDaily;
-      console.log("Discount -30% new price per day : " + priceDaily);
-    }
-    else if(nDaysRent > 1) {
-      priceDaily = 0.9 * priceDaily;
-      console.log("Discount -10% new price per day : " + priceDaily);
-    }
-
-    var basePrice = priceDaily * nDaysRent + entry.distance * priceKm;
-    console.log("Base price : " + basePrice);
-
-    splitCommission(entry, basePrice);
-
-    var deductiblePrice = 0;
-    if(entry.options.deductibleReduction==true) {
-      deductiblePrice = 4 * nDaysRent;
-      console.log("Deductible option taken. Extra price : +" + deductiblePrice);
-    }
-
-    entry.price = basePrice + deductiblePrice;
-    console.log("Total price : " + entry.price);
-    console.log("");
-
   }
 }
 
-generatePricePerDriver();
+
+function process() {
+  rentals.forEach(rentProcess);
+
+  function rentProcess(entry) {
+    generatePricePerDriver(entry);
+  }
+}
+
+process();
 
 
 console.log(cars);
