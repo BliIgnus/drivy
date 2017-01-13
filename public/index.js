@@ -166,23 +166,24 @@ var rentalModifications = [{
 }];
 
 
-function splitCommission() {
-  rentals.forEach(commissionProcess);
+function splitCommission(entry, priceWODeductible) {
 
-  function commissionProcess(entry) {
-    var totalCommission = entry.price * 0.3;
+    var totalCommission = priceWODeductible * 0.3;
     console.log("Total commission : " + totalCommission);
+
     entry.commission.insurance = totalCommission * 0.5;
     console.log("Insurance commission : " + entry.commission.insurance);
     totalCommission -= entry.commission.insurance;
+
     entry.commission.assistance = 1;
     console.log("Assistance commission : " + entry.commission.assistance);
     totalCommission -= entry.commission.assistance;
+
     entry.commission.drivy = totalCommission;
     console.log("Drivy commission : " + entry.commission.drivy);
+
     var checkSum = entry.commission.insurance + entry.commission.assistance + entry.commission.drivy;
     console.log("Total commission check sum : " + checkSum);
-  }
 }
 
 
@@ -221,13 +222,26 @@ function generatePricePerDriver() {
       console.log("Discount -10% new price per day : " + priceDaily);
     }
 
-    entry.price = priceDaily * nDaysRent + entry.distance * priceKm;
-    console.log("Price : " + entry.price);
+    var basePrice = priceDaily * nDaysRent + entry.distance * priceKm;
+    console.log("Base price : " + basePrice);
+
+    splitCommission(entry, basePrice);
+
+    var deductiblePrice = 0;
+    if(entry.options.deductibleReduction==true) {
+      deductiblePrice = 4 * nDaysRent;
+      console.log("Deductible option taken. Extra price : +" + deductiblePrice);
+    }
+
+    entry.price = basePrice + deductiblePrice;
+    console.log("Total price : " + entry.price);
+    console.log("");
+
   }
 }
 
 generatePricePerDriver();
-splitCommission();
+
 
 console.log(cars);
 console.log(rentals);
