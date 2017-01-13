@@ -166,6 +166,26 @@ var rentalModifications = [{
 }];
 
 
+function splitCommission() {
+  rentals.forEach(commissionProcess);
+
+  function commissionProcess(entry) {
+    var totalCommission = entry.price * 0.3;
+    console.log("Total commission : " + totalCommission);
+    entry.commission.insurance = totalCommission * 0.5;
+    console.log("Insurance commission : " + entry.commission.insurance);
+    totalCommission -= entry.commission.insurance;
+    entry.commission.assistance = 1;
+    console.log("Assistance commission : " + entry.commission.assistance);
+    totalCommission -= entry.commission.assistance;
+    entry.commission.drivy = totalCommission;
+    console.log("Drivy commission : " + entry.commission.drivy);
+    var checkSum = entry.commission.insurance + entry.commission.assistance + entry.commission.drivy;
+    console.log("Total commission check sum : " + checkSum);
+  }
+}
+
+
 function generatePricePerDriver() {
 
   rentals.forEach(rentProcess);
@@ -207,6 +227,7 @@ function generatePricePerDriver() {
 }
 
 generatePricePerDriver();
+splitCommission();
 
 console.log(cars);
 console.log(rentals);
